@@ -111,7 +111,7 @@ const GenAIApp = () => {
     // Handlers for input changes
     const handleLimitChange = (event) => {
         dataLimit = parseInt(event.target.value);
-        bigQueryResults();
+        fetchData(uid);
     };
 
 
@@ -301,12 +301,6 @@ const GenAIApp = () => {
         }
     };
 
-
-    const handleModelChange = (modelValue) => {
-        searchModel = modelValue;
-        bigQueryResults();
-    }
-
     const vectorSearchResults = async () => {
         setIsLoading(true);
         console.log("Fetching data for Vector search query:", searchQuery);
@@ -326,7 +320,8 @@ const GenAIApp = () => {
                 const genaiCollection = collection(db, 'genai', uid, 'notes');
                 const docsQuery = query(genaiCollection, where('__name__', 'in', docIds));
                 const docsSnapshot = await getDocs(docsQuery);
-                const genaiList = docsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const docsMap = new Map(docsSnapshot.docs.map(doc => [doc.id, { id: doc.id, ...doc.data() }]));
+                const genaiList = docIds.map(id => docsMap.get(id)).filter(doc => doc !== undefined);
                 setGenaiData(genaiList);
                 setIsLoading(false);
             })
@@ -334,37 +329,6 @@ const GenAIApp = () => {
                 console.error("Error fetching data:", error);
                 setIsLoading(false);
             });
-    }
-
-    const bigQueryResults = () => {
-        setIsLoading(true);
-        console.log("Fetching data for search query:", searchQuery);
-        console.log("search model:", searchModel);
-        console.log("limit:", dataLimit);
-        console.log("URL:", process.env.REACT_APP_GENAI_API_BIGQUERY_URL);
-        fetch(process.env.REACT_APP_GENAI_API_BIGQUERY_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                uid: uid,
-                limit: dataLimit,
-                q: searchQuery,
-                model: searchModel
-            })
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setGenaiData(data);
-                setIsLoading(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching data:", error);
-                setIsLoading(false);
-            });
-    }
-    if (showMainApp) {
-        return (
-            <App user={user} />
-        );
     }
 
     return (
@@ -430,7 +394,7 @@ const GenAIApp = () => {
                     {isLoading && <p> Loading Data...</p>}
                     {!isLoading && <div>
                         {genaiData.map((item) => (
-                            <div key={item.createdDateTime}>
+                            <div key={item.id}>
                                 <div style={{ border: "1px solid black", backgroundColor: "#edf5f1" }}>
                                     <div >
                                         <button style={{ color: "blue", fontWeight: "bold", fontSize: '16px' }} onClick={() => {
