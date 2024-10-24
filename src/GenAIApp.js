@@ -44,7 +44,7 @@ const GenAIApp = () => {
     const [fileName, setFileName] = useState('');
     const [docId, setDocId] = useState('');
 
-    const embedPrompt = async (docId) => {
+    const embedPrompt = async () => {
         try {
             console.log('Embedding prompt:', docId);
             const response = await fetch(`${process.env.REACT_APP_GENAI_API_URL}embed-prompt`, {
@@ -114,10 +114,6 @@ const GenAIApp = () => {
         bigQueryResults();
     };
 
-    const handleSearchChange = (event) => {
-        searchQuery = event.target.value;
-        bigQueryResults();
-    };
 
     const handleVectorSearchChange = (event) => {
         searchQuery = event.target.value;
@@ -319,6 +315,7 @@ const GenAIApp = () => {
             method: "POST",
             body: JSON.stringify({
                 uid: uid,
+                collection: 'notes',
                 q: searchQuery,
                 limit: dataLimit,
             })
@@ -326,7 +323,7 @@ const GenAIApp = () => {
             .then((res) => res.json())
             .then(async (data) => {
                 const docIds = data.document_ids;
-                const genaiCollection = collection(db, 'genai', uid, 'MyGenAI');
+                const genaiCollection = collection(db, 'genai', uid, 'notes');
                 const docsQuery = query(genaiCollection, where('__name__', 'in', docIds));
                 const docsSnapshot = await getDocs(docsQuery);
                 const genaiList = docsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -428,14 +425,6 @@ const GenAIApp = () => {
                     placeholder="Semantic or Vector Search"
                     style={{ width: '30%', padding: '10px', border: '2px', fontSize: '16px' }}
                 />
-                <input
-                    type="text"
-                    onKeyDown={(event) => (event.key === "Enter" || event.key === "Tab") && handleSearchChange(event)}
-                    placeholder="Keyword Search"
-                    style={{ width: '30%', padding: '10px', marginLeft: '5px', border: '2px', fontSize: '16px' }}
-                />
-
-
                 {/* **Existing Data Display** */}
                 <div>
                     {isLoading && <p> Loading Data...</p>}
