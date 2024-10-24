@@ -1,20 +1,9 @@
 # Generative AI Studio
 
 ## Lessons Learned 
-### React Hooks
-** useEffect **
-* useEffect was getting triggered twice, once for searchQuery and once for limit. I had to use if condition to stop it from happening.
-* Adding dependencies to useEffect will execute the code whenever dependencies change.
-** useState **
-* use this React hook to assign values
+### git push --mirror <new_repo> 
+use above command to duplicate repo
 
-### JSON.Parse and JSON.Stringify
-* JSON.Parse will convert string to JSON object
-  * JSON is subset of JavaScript object and array with stricter rules
-    * JSON object has double quotes for each property
-    * JavaScript Object has no double quotes for keys, for values typically single quote is used for strings (JSON.stringify will convert all properties to double quotes)
-  * JSON.parse(text) will resolve the issues related to JSON object (double quotes for each property) and JavaScript Array (no double quotes for keys, for values typically single quote is used for strings) conversion issues
-  
 ```javascript
   console.log("URL:", "https://genaiapp-892085575649.us-central1.run.app/bigquery-search");
   fetch("https://genaiapp-892085575649.us-central1.run.app/bigquery-search", {
