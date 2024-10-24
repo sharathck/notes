@@ -44,15 +44,15 @@ const GenAIApp = () => {
     const [fileName, setFileName] = useState('');
     const [docId, setDocId] = useState('');
 
-    const embedPrompt = async () => {
+    const embedPrompt = async (enbedDocID) => {
         try {
-            console.log('Embedding prompt:', docId);
+            console.log('Embedding prompt:', enbedDocID);
             const response = await fetch(`${process.env.REACT_APP_GENAI_API_URL}embed-prompt`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ doc_id: docId, uid: uid , collection: 'notes', field1: 'fileName' , field2: 'promptInput'})
+                body: JSON.stringify({ doc_id: enbedDocID, uid: uid , collection: 'notes', field1: 'fileName' , field2: 'promptInput'})
             });
 
             if (!response.ok) {
@@ -225,10 +225,18 @@ const GenAIApp = () => {
     // Handler for Generate Button Click
     // **Handler for Generate Button Click**
     const handleSave = async () => {
-        if (!fileName.trim() || !promptInput.trim()) {
-            alert('Please enter a filename and content.');
+        if (!promptInput.trim()) {
+            alert('Please enter the content.');
             return;
         }
+        // add YYYY MM DD to the filename as suffix
+        let parameter_fileName = fileName;
+        if (!parameter_fileName.trim()) {
+            const today = new Date();
+            const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + ' ' + today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+            parameter_fileName = 'Note ' + date;
+        }
+
         setIsGenerating(true);
         try {
             const user = auth.currentUser;
@@ -240,7 +248,7 @@ const GenAIApp = () => {
             if (docId.length > 2) {
                 const docRef = doc(db, 'genai', user.uid, 'notes', docId);
                 await updateDoc(docRef, {
-                    fileName: fileName,
+                    fileName: parameter_fileName,
                     promptInput: promptInput,
                     modifiedDateTime: new Date(),
                     size: promptInput.length
@@ -254,7 +262,7 @@ const GenAIApp = () => {
             else {
                 const genaiCollection = collection(db, 'genai', user.uid, 'notes');
                 const newDocRef = await addDoc(genaiCollection, {
-                    fileName: fileName,
+                    fileName: parameter_fileName,
                     promptInput: promptInput,
                     createdDateTime: new Date(),
                     modifiedDateTime: new Date(),
@@ -342,20 +350,10 @@ const GenAIApp = () => {
                         placeholder="Enter filename"
                         style={{ width: '30%', padding: '10px', marginBottom: '10px', border: '2px', fontSize: '16px' }}
                     />
-                    <MDEditor
-                        value={promptInput}
-                        onChange={(value) => setPromptInput(value)}
-                        placeholder="Enter your prompt here..."
-                        style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
-                    />
-
-                </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                    <button
+                                        <button
                         onClick={handleSave}
                         className="signonpagebutton"
-                        style={{ marginLeft: '20px', padding: '15px 20px', fontSize: '16px' }}
+                        style={{ marginLeft: '20px', padding: '10px 10px', fontSize: '16px' }}
                     >
                         {isGenerating ? (
                             <FaSpinner className="spinning" />
@@ -371,6 +369,17 @@ const GenAIApp = () => {
                     ) : (
                         <button className='signoutbutton' onClick={handleSignOut}><FaSignOutAlt /> </button>
                     )}
+
+                    <MDEditor
+                        value={promptInput}
+                        onChange={(value) => setPromptInput(value)}
+                        placeholder="Enter your prompt here..."
+                        style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
+                    />
+
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
                 </div>
                 <label>
                     Limit:
@@ -409,10 +418,10 @@ const GenAIApp = () => {
                                         <span style={{ color: "black", fontSize: '12px' }}>
                                             size: {item.size} &nbsp;&nbsp;&nbsp;&nbsp;
                                             created:  </span>
-                                        <span style={{ color: "grey", fontSize: "16px" }}>{new Date(item.createdDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span> &nbsp;&nbsp;&nbsp;&nbsp;
+                                        <span style={{ color: "grey", fontSize: "16px" }}>{new Date(item.createdDateTime.toDate()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span> &nbsp;&nbsp;&nbsp;&nbsp;
                                         <span style={{ color: "black", fontSize: '12px' }}>
                                             modified: </span>
-                                        <span style={{ color: "blue", fontSize: "16px" }}>{new Date(item.modifiedDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span> &nbsp;&nbsp;
+                                        <span style={{ color: "blue", fontSize: "16px" }}>{new Date(item.modifiedDateTime.toDate()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span> &nbsp;&nbsp;
                                         <button className="signgooglepagebutton" onClick={() => synthesizeSpeech(item.promptInput, item.language || "English")}><FaHeadphones /></button>&nbsp;&nbsp;
                                     </div>
                                 </div>

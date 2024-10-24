@@ -110,11 +110,11 @@ use above command to duplicate repo
   *  create manifest.json file in public folder
   ```json
   {
-    "short_name": "Gen AI",
-    "name": "Gen AI Studio",
+    "short_name": "AI Notes",
+    "name": "AI Notes",
     "icons": [
       {
-        "src": "ai.avif"
+        "src": "note.png"
       }
     ],
     "start_url": ".",

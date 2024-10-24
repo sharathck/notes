@@ -1,9 +1,9 @@
 {
-    "short_name": "Gen AI",
-    "name": "Gen AI Studio",
+    "short_name": "Notes",
+    "name": "Notes",
     "icons": [
       {
-        "src": "ai.avif"
+        "src": "note.png"
       }
     ],
     "start_url": ".",
