@@ -25,7 +25,7 @@ let searchQuery = '';
 let searchModel = 'All';
 let dataLimit = 11;
 let promptSuggestion = 'NA';
-let autotag = '';
+let autoPromptInput = '';
 
 const GenAIApp = () => {
     // **State Variables**
@@ -34,14 +34,14 @@ const GenAIApp = () => {
     const [lastVisible, setLastVisible] = useState(null); // State for the last visible document
     const [user, setUser] = useState(null);
     const [uid, setUid] = useState(null);
-    const [tag, setTag] = useState('');
+    const [promptInput, setPromptInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isTTS, setIsTTS] = useState(false);
     const [isGeneratingTTS, setIsGeneratingTTS] = useState(false);
     const [voiceName, setVoiceName] = useState('en-US-AriaNeural');
     const [showMainApp, setShowMainApp] = useState(false);
     const [GenAIParameter, setGenAIParameter] = useState(false);
-    const [fullText, setFullText] = useState('');
+    const [fileName, setFileName] = useState('');
     const [docId, setDocId] = useState('');
 
     const embedPrompt = async (docId) => {
@@ -52,7 +52,7 @@ const GenAIApp = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ doc_id: docId, uid: uid })
+                body: JSON.stringify({ doc_id: docId, uid: uid , collection: 'notes', field1: 'fileName' , field2: 'promptInput'})
             });
 
             if (!response.ok) {
@@ -228,9 +228,9 @@ const GenAIApp = () => {
 
     // Handler for Generate Button Click
     // **Handler for Generate Button Click**
-    const handleGenerate = async () => {
-        if (!fullText.trim() || !tag.trim()) {
-            alert('Please enter a fullText and content.');
+    const handleSave = async () => {
+        if (!fileName.trim() || !promptInput.trim()) {
+            alert('Please enter a filename and content.');
             return;
         }
         setIsGenerating(true);
@@ -244,28 +244,31 @@ const GenAIApp = () => {
             if (docId.length > 2) {
                 const docRef = doc(db, 'genai', user.uid, 'notes', docId);
                 await updateDoc(docRef, {
-                    fullText: fullText,
-                    tag: tag,
+                    fileName: fileName,
+                    promptInput: promptInput,
                     modifiedDateTime: new Date(),
-                    size: tag.length
+                    size: promptInput.length
                 });
+                embedPrompt(docId);
                 console.log('Document updated with ID: ', docId);
-                setFullText('');
-                setTag('');
+                setFileName('');
+                setPromptInput('');
                 return;
             }
             else {
                 const genaiCollection = collection(db, 'genai', user.uid, 'notes');
                 const newDocRef = await addDoc(genaiCollection, {
-                    fullText: fullText,
-                    tag: tag,
+                    fileName: fileName,
+                    promptInput: promptInput,
                     createdDateTime: new Date(),
                     modifiedDateTime: new Date(),
-                    size: tag.length
+                    size: promptInput.length
                 });
                 console.log('Document written with ID: ', newDocRef.id);
-                setFullText('');
-                setTag('');
+                setDocId(newDocRef.id);
+                embedPrompt(newDocRef.id);
+                setFileName('');
+                setPromptInput('');
             }
         } catch (error) {
             console.error("Error adding document: ", error);
@@ -372,15 +375,15 @@ const GenAIApp = () => {
             <div>
                 <div>
                     <input
-                        value={fullText}
-                        onChange={(e) => setFullText(e.target.value)}
+                        value={fileName}
+                        onChange={(e) => setFileName(e.target.value)}
                         type="text"
-                        placeholder="Enter fullText"
+                        placeholder="Enter filename"
                         style={{ width: '30%', padding: '10px', marginBottom: '10px', border: '2px', fontSize: '16px' }}
                     />
                     <MDEditor
-                        value={tag}
-                        onChange={(value) => setTag(value)}
+                        value={promptInput}
+                        onChange={(value) => setPromptInput(value)}
                         placeholder="Enter your prompt here..."
                         style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
                     />
@@ -389,7 +392,7 @@ const GenAIApp = () => {
 
                 <div style={{ marginBottom: '20px' }}>
                     <button
-                        onClick={handleGenerate}
+                        onClick={handleSave}
                         className="signonpagebutton"
                         style={{ marginLeft: '20px', padding: '15px 20px', fontSize: '16px' }}
                     >
@@ -442,14 +445,14 @@ const GenAIApp = () => {
                                 <div style={{ border: "1px solid black", backgroundColor: "#edf5f1" }}>
                                     <div >
                                         <button style={{ color: "blue", fontWeight: "bold", fontSize: '16px' }} onClick={() => {
-                                            setFullText(item.fullText);
-                                            setTag(item.tag);
+                                            setFileName(item.fileName);
+                                            setPromptInput(item.promptInput);
                                             setDocId(item.id);
                                             console.log('Document ID:', item.id);
                                         }}>
                                             <FaMarkdown />
                                         </button>
-                                        <span style={{ color: "green", fontWeight: "bold", fontSize: '16px' }}> {item.showRawAnswer ? item.fullText : item.fullText} </span>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <span style={{ color: "green", fontWeight: "bold", fontSize: '16px' }}> {item.showRawAnswer ? item.fileName : item.fileName} </span>&nbsp;&nbsp;&nbsp;&nbsp;
                                         <span style={{ color: "black", fontSize: '12px' }}>
                                             size: {item.size} &nbsp;&nbsp;&nbsp;&nbsp;
                                             created:  </span>
@@ -457,7 +460,7 @@ const GenAIApp = () => {
                                         <span style={{ color: "black", fontSize: '12px' }}>
                                             modified: </span>
                                         <span style={{ color: "blue", fontSize: "16px" }}>{new Date(item.modifiedDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span> &nbsp;&nbsp;
-                                        <button className="signgooglepagebutton" onClick={() => synthesizeSpeech(item.tag, item.language || "English")}><FaHeadphones /></button>&nbsp;&nbsp;
+                                        <button className="signgooglepagebutton" onClick={() => synthesizeSpeech(item.promptInput, item.language || "English")}><FaHeadphones /></button>&nbsp;&nbsp;
                                     </div>
                                 </div>
                                 <div style={{ border: "1px dotted black", padding: "2px" }}>
@@ -465,7 +468,7 @@ const GenAIApp = () => {
 
                                     </h4>
                                     <div style={{ fontSize: '16px' }}>
-                                        {item.tag && renderQuestion(item.tag)}
+                                        {item.promptInput && renderQuestion(item.promptInput)}
                                     </div>
                                 </div>
 
