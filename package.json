@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@mdxeditor/editor": "^3.14.0",
+    "@uiw/react-md-editor": "^4.0.4",
     "firebase": "^10.13.1",
     "fs": "^0.0.1-security",
     "microsoft-cognitiveservices-speech-sdk": "^1.36.0",
@@ -16,7 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "BUILD_PATH='./docs' react-scripts build && echo www.genaiistudio.com > ./docs/CNAME",
+    "build": "BUILD_PATH='./docs' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
