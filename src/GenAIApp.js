@@ -91,7 +91,14 @@ const GenAIApp = () => {
         });
         return () => unsubscribe();
     }, []);
+    // Call handleSave method every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            handleSave();
+        }, 30000);
 
+        return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [promptInput, fileName]);
 
     // Function to fetch data from Firestore
     const fetchData = async (userID) => {
@@ -255,8 +262,6 @@ const GenAIApp = () => {
                 });
                 embedPrompt(docId);
                 console.log('Document updated with ID: ', docId);
-                setFileName('');
-                setPromptInput('');
                 return;
             }
             else {
@@ -271,8 +276,7 @@ const GenAIApp = () => {
                 console.log('Document written with ID: ', newDocRef.id);
                 setDocId(newDocRef.id);
                 embedPrompt(newDocRef.id);
-                setFileName('');
-                setPromptInput('');
+
             }
         } catch (error) {
             console.error("Error adding document: ", error);
@@ -350,7 +354,7 @@ const GenAIApp = () => {
                         placeholder="Enter filename"
                         style={{ width: '30%', padding: '10px', marginBottom: '10px', border: '2px', fontSize: '16px' }}
                     />
-                                        <button
+                    <button
                         onClick={handleSave}
                         className="signonpagebutton"
                         style={{ marginLeft: '20px', padding: '10px 10px', fontSize: '16px' }}
@@ -373,6 +377,7 @@ const GenAIApp = () => {
                     <MDEditor
                         value={promptInput}
                         onChange={(value) => setPromptInput(value)}
+                        
                         placeholder="Enter your prompt here..."
                         style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
                     />
