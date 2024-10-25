@@ -52,7 +52,7 @@ const GenAIApp = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ doc_id: enbedDocID, uid: uid , collection: 'notes', field1: 'fileName' , field2: 'promptInput'})
+                body: JSON.stringify({ doc_id: enbedDocID, uid: uid, collection: 'notes', field1: 'fileName', field2: 'promptInput' })
             });
 
             if (!response.ok) {
@@ -82,6 +82,12 @@ const GenAIApp = () => {
                 }
                 setUid(currentUser.uid);
                 console.log('User is signed in:', currentUser.uid);
+                if (!fileName.trim()) {
+                    const today = new Date();
+                    const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + ' ' + today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+                    setFileName('MoM ' + date);
+                }
+        
                 // Fetch data for the authenticated user
                 await fetchData(currentUser.uid);
             }
@@ -94,7 +100,9 @@ const GenAIApp = () => {
     // Call handleSave method every 5 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            handleSave();
+            if (promptInput.trim().length > 0) {
+                handleSave();
+            }
         }, 30000);
 
         return () => clearInterval(interval); // Cleanup interval on component unmount
@@ -236,14 +244,6 @@ const GenAIApp = () => {
             alert('Please enter the content.');
             return;
         }
-        // add YYYY MM DD to the filename as suffix
-        let parameter_fileName = fileName;
-        if (!parameter_fileName.trim()) {
-            const today = new Date();
-            const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + ' ' + today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-            parameter_fileName = 'Note ' + date;
-        }
-
         setIsGenerating(true);
         try {
             const user = auth.currentUser;
@@ -255,7 +255,7 @@ const GenAIApp = () => {
             if (docId.length > 2) {
                 const docRef = doc(db, 'genai', user.uid, 'notes', docId);
                 await updateDoc(docRef, {
-                    fileName: parameter_fileName,
+                    fileName: fileName,
                     promptInput: promptInput,
                     modifiedDateTime: new Date(),
                     size: promptInput.length
@@ -267,7 +267,7 @@ const GenAIApp = () => {
             else {
                 const genaiCollection = collection(db, 'genai', user.uid, 'notes');
                 const newDocRef = await addDoc(genaiCollection, {
-                    fileName: parameter_fileName,
+                    fileName: fileName,
                     promptInput: promptInput,
                     createdDateTime: new Date(),
                     modifiedDateTime: new Date(),
@@ -348,6 +348,7 @@ const GenAIApp = () => {
             <div>
                 <div>
                     <input
+                        className="containerInput"
                         value={fileName}
                         onChange={(e) => setFileName(e.target.value)}
                         type="text"
@@ -375,9 +376,9 @@ const GenAIApp = () => {
                     )}
 
                     <MDEditor
+                        className="containerInput"
                         value={promptInput}
                         onChange={(value) => setPromptInput(value)}
-                        
                         placeholder="Enter your prompt here..."
                         style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
                     />
@@ -389,6 +390,7 @@ const GenAIApp = () => {
                 <label>
                     Limit:
                     <input
+                        className="limitInput"
                         type="number"
                         onBlur={(event) => handleLimitChange(event)}
                         onKeyDown={(event) => (event.key === "Enter" || event.key === "Tab") && handleLimitChange(event)}
@@ -398,26 +400,29 @@ const GenAIApp = () => {
                     />
                 </label>
                 <input
+                    className="searchInput"
                     type="text"
                     onKeyDown={(event) => (event.key === "Enter" || event.key === "Tab") && handleVectorSearchChange(event)}
                     placeholder="Semantic or Vector Search"
                     style={{ width: '30%', padding: '10px', border: '2px', fontSize: '16px' }}
                 />
                 {/* **Existing Data Display** */}
-                <div>
+                <div className="containerInput">
+                    <br />
+                    <br />
                     {isLoading && <p> Loading Data...</p>}
                     {!isLoading && <div>
                         {genaiData.map((item) => (
                             <div key={item.id}>
                                 <div style={{ border: "1px solid black", backgroundColor: "#edf5f1" }}>
                                     <div >
-                                        <button style={{ color: "blue", fontWeight: "bold", fontSize: '16px' }} onClick={() => {
+                                        <button style={{ color: "blue", fontWeight: "bold", fontSize: '18px' }} onClick={() => {
                                             setFileName(item.fileName);
                                             setPromptInput(item.promptInput);
                                             setDocId(item.id);
                                             console.log('Document ID:', item.id);
                                         }}>
-                                            <FaMarkdown />
+                                            Edit
                                         </button>
                                         <span style={{ color: "green", fontWeight: "bold", fontSize: '16px' }}> {item.showRawAnswer ? item.fileName : item.fileName} </span>&nbsp;&nbsp;&nbsp;&nbsp;
                                         <span style={{ color: "black", fontSize: '12px' }}>
