@@ -253,22 +253,24 @@ const GenAIApp = () => {
             }
 
             if (docId.length > 2) {
+                const cleanedPromptInput = promptInput.replace(/\.mark/g, ' ');
                 const docRef = doc(db, 'genai', user.uid, 'notes', docId);
                 await updateDoc(docRef, {
                     fileName: fileName,
-                    promptInput: promptInput,
+                    promptInput: cleanedPromptInput,
                     modifiedDateTime: new Date(),
-                    size: promptInput.length
+                    size: cleanedPromptInput.length
                 });
                 embedPrompt(docId);
                 console.log('Document updated with ID: ', docId);
                 return;
             }
             else {
+                const cleanedPromptInput = promptInput.replace(/\.mark/g, ' ');
                 const genaiCollection = collection(db, 'genai', user.uid, 'notes');
                 const newDocRef = await addDoc(genaiCollection, {
                     fileName: fileName,
-                    promptInput: promptInput,
+                    promptInput: cleanedPromptInput,
                     createdDateTime: new Date(),
                     modifiedDateTime: new Date(),
                     size: promptInput.length
