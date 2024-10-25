@@ -31,6 +31,15 @@
   border: 1px solid black;
   box-shadow: 3px 5px 8px rgba(4, 4, 4, 0.8);
 }
+.mdeditor
+{
+  padding: 2px;
+  font-size: 18px;
+  width: 99%; /* Increase the width */
+  height: 600px; /* Increase the height */
+  border: 1px solid black;
+  box-shadow: 3px 5px 8px rgba(4, 4, 4, 0.8);
+}
 .modelInput
 {
   margin-left: 15px;

@@ -251,9 +251,8 @@ const GenAIApp = () => {
                 console.error("No user is signed in");
                 return;
             }
-
+            const cleanedPromptInput = promptInput.replace(/{\.mark}/g, '');
             if (docId.length > 2) {
-                const cleanedPromptInput = promptInput.replace(/\.mark/g, ' ');
                 const docRef = doc(db, 'genai', user.uid, 'notes', docId);
                 await updateDoc(docRef, {
                     fileName: fileName,
@@ -266,7 +265,6 @@ const GenAIApp = () => {
                 return;
             }
             else {
-                const cleanedPromptInput = promptInput.replace(/\.mark/g, ' ');
                 const genaiCollection = collection(db, 'genai', user.uid, 'notes');
                 const newDocRef = await addDoc(genaiCollection, {
                     fileName: fileName,
@@ -376,15 +374,12 @@ const GenAIApp = () => {
                     ) : (
                         <button className='signoutbutton' onClick={handleSignOut}><FaSignOutAlt /> </button>
                     )}
-
                     <MDEditor
                         className="containerInput"
                         value={promptInput}
                         onChange={(value) => setPromptInput(value)}
                         placeholder="Enter your prompt here..."
-                        style={{ width: '99%', padding: '2px', height: '140px', fontSize: '16px' }}
                     />
-
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
