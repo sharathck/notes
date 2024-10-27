@@ -13,6 +13,12 @@
   border: 1px solid black;
   box-shadow: 4px 5px 6px rgba(4, 4, 4, 0.8);
 }
+.containerMDInput
+{
+  border: 1px solid black;
+  box-shadow: 4px 5px 6px rgba(4, 4, 4, 0.8);
+  height: 40rem;
+}
 .searchInput
 {
   margin-left: 15px;

@@ -91,7 +91,7 @@ function SigninApp() {
     };
 
     if (user) {
-        if (MainApp === 'GenAIApp') {
+        if (MainApp === 'GenAI') {
             return (
                 <GenAIApp user={user} />
             );

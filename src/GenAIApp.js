@@ -375,7 +375,7 @@ const GenAIApp = () => {
                         <button className='signoutbutton' onClick={handleSignOut}><FaSignOutAlt /> </button>
                     )}
                     <MDEditor
-                        className="containerInput"
+                        className="containerMDInput"
                         value={promptInput}
                         onChange={(value) => setPromptInput(value)}
                         placeholder="Enter your prompt here..."
