@@ -10,7 +10,8 @@ import {
     onAuthStateChanged,
     signOut,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 
 function SigninApp() {
@@ -65,6 +66,20 @@ function SigninApp() {
         }
     };
 
+    const handleResetPassword = async () => {
+        if (!email) {
+            alert('Please enter your email to reset your password.');
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert('Password reset email sent! Please check your inbox.');
+        } catch (error) {
+            alert('Error sending password reset email. ' + error.message);
+            console.error('Error sending password reset email:', error);
+        }
+    };
+
     const handleSignInWithGoogle = () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider).catch((error) => {
@@ -113,7 +128,7 @@ function SigninApp() {
                 </button>
                 <br />
                 <br />
-                <button onClick={() => alert('Please enter your email to reset your password.')}>
+                <button onClick={handleResetPassword}>
                     Did you forget Password?
                 </button>
                 <br />
